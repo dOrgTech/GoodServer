@@ -2,10 +2,11 @@
 import express, { Router } from 'express'
 import Gun from 'gun'
 import SEA from 'gun/sea'
-import { type StorageAPI, type UserRecord } from '../../imports/types'
+import { type StorageAPI, type UserRecord, type OTP } from '../../imports/types'
 import conf from '../server.config'
 import logger from '../../imports/pino-logger'
 import { stringify } from 'querystring'
+import ezp from 'ezp'
 
 const log = logger.child({ from: 'GunDB-Middleware' })
 
@@ -49,6 +50,7 @@ class GunDB implements StorageAPI {
         this.user.auth('gooddollar', password, async authres => {
           log.info('Authenticated GunDB user:', { name })
           this.usersCol = this.user.get('users')
+          log.debug('usersCol', this.usersCol)
           resolv(true)
         })
       })
@@ -65,10 +67,41 @@ class GunDB implements StorageAPI {
   }
 
   getUser(pubkey: string): Promise<UserRecord> {
-    return this.usersCol.get(pubkey).then(this.recordSanitize)
+    log.info('getUser')
+    let { usersCol, updateUser, recordSanitize } = this
+    updateUser = updateUser.bind(this)
+    const handler = {
+      get: function(target, property) {
+        log.debug(`"getter" called: ${JSON.stringify(target)} ${property}`)
+        if (target[property] && target[property]['#']) {
+          log.debug(`return nested: ${property}`)
+
+          return usersCol
+            .get(pubkey)
+            .get(property)
+            .then(recordSanitize)
+        }
+        log.debug(`return property :  ${property}`)
+
+        return target[property]
+      },
+      set: async function(target, property, value) {
+        const { pubkey } = target
+        log.debug(`"setter" called: ${property} = ${value}`)
+
+        await updateUser({ pubkey, [property]: value }).catch(err => log.error(err))
+        log.debug('setter finished')
+      }
+    }
+    return this.usersCol
+      .get(pubkey)
+      .then(this.recordSanitize)
+      .then(user => new Proxy(user, handler))
   }
 
   getUserField(pubkey: string, field: string): Promise<any> {
+    log.info('getUserField')
+
     return this.usersCol
       .get(pubkey)
       .get(field)

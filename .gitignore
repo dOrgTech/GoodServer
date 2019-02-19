@@ -10,3 +10,4 @@ publicdb
 privatedb
 config/*/*
 test/jest-envs/*
+build

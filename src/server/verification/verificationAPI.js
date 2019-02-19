@@ -8,6 +8,24 @@ import { sendOTP } from '../../imports/otp'
 import conf from '../server.config'
 
 const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
+  app.get(
+    '/test/user/:pubkey',
+    //passport.authenticate('jwt', { session: false }),
+    wrapAsync(async (req, res, next) => {
+      const log = req.log.child({ from: 'test - test/user' })
+
+      const { pubkey } = req.params
+
+      const storedUser = await storage.getUser(pubkey)
+      storedUser.otp = { code: 1, expirationDate: 2 }
+      log.debug('storedUser', { storedUser })
+      const otp = await storedUser.otp
+      log.debug('opt', { otp })
+
+      res.json({ pubkey, otp, storedUser })
+    })
+  )
+
   app.post(
     '/verify/user',
     passport.authenticate('jwt', { session: false }),

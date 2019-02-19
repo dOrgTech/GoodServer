@@ -1,4 +1,6 @@
 // @flow
+export type OTP = { code: number, expirationDate: number }
+
 export type UserRecord = {
   pubkey: string,
   fullName?: string,
@@ -7,7 +9,7 @@ export type UserRecord = {
   jwt?: string,
   smsValidated?: boolean,
   isEmailConfirmed?: boolean,
-  otp?: { code: number, expirationDate: number }
+  otp?: Promise<OTP>
 }
 
 export interface StorageAPI {
