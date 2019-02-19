@@ -9,7 +9,7 @@ import conf from '../server.config'
 
 const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
   app.get(
-    '/test/user/:pubkey',
+    '/get/user/:pubkey',
     //passport.authenticate('jwt', { session: false }),
     wrapAsync(async (req, res, next) => {
       const log = req.log.child({ from: 'test - test/user' })
@@ -17,7 +17,24 @@ const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
       const { pubkey } = req.params
 
       const storedUser = await storage.getUser(pubkey)
-      storedUser.otp = { code: 1, expirationDate: 2 }
+      log.debug('storedUser', { storedUser })
+      const otp = await storedUser.otp
+      log.debug('opt', { otp })
+
+      res.json({ pubkey, otp, storedUser })
+    })
+  )
+
+  app.get(
+    '/set/user/:pubkey',
+    //passport.authenticate('jwt', { session: false }),
+    wrapAsync(async (req, res, next) => {
+      const log = req.log.child({ from: 'test - test/user' })
+
+      const { pubkey } = req.params
+      const { code, expirationDate } = req.query
+      const storedUser = await storage.getUser(pubkey)
+      storedUser.otp = { code, expirationDate }
       log.debug('storedUser', { storedUser })
       const otp = await storedUser.otp
       log.debug('opt', { otp })
