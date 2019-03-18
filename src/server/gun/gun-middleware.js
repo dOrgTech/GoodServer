@@ -39,7 +39,7 @@ class GunDB implements StorageAPI {
   serverName: string
 
   init(server: typeof express | null, password: string, name: string): Promise<boolean> {
-    this.gun = Gun({ web: server, file: name })
+    this.gun = Gun({ web: server, file: name, peers: ['http://goodcart.herokuapp.com/gun'] })
     this.user = this.gun.user()
     this.serverName = name
     return new Promise((resolve, reject) => {
