@@ -17,7 +17,7 @@ export type VerificationData = {
 
 export type EnrollResult = {
   enrollmentIdentifier: string,
-  livenessResult: 'passed' | 'failed',
+  livenessResult: 'passed' | 'undetermined',
   livenessScore: number,
   glassesScore: number,
   glassesDecision: boolean,
