@@ -32,15 +32,21 @@ const setup = (app: Router, storage: StorageAPI) => {
       const mauticRecord = process.env.NODE_ENV === 'development' ? {} : await Mautic.createContact(user).catch(e => {})
       logger.debug('User mautic record', { mauticRecord })
       //topwallet of user after registration
+      const retryTopWallet = async (retries = 3) => {
+        let res = await AdminWallet.topWallet(userRecord.gdAddress, null, true).catch(e => {
+          log.error(e)
+          return false
+        })
+        if (res) return res
+        if (res == false && retries > 0) return retryTopWallet(retries - 1)
+        else throw Error('Failed topping new user wallet after 3 retries')
+      }
       let ok = await Promise.all([
-        AdminWallet.topWallet(userRecord.gdAddress, null, true),
+        retryTopWallet(),
         storage.updateUser({ ...user, mauticId: get(mauticRecord, 'contact.fields.all.id', -1) })
       ])
         .then(r => 1)
-        .catch(e => {
-          logger.error(e)
-          throw e
-        })
+        .catch(e => ({ ok: 0, err: e.message }))
       res.json({ ok })
     })
   )
