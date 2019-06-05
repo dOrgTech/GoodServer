@@ -146,6 +146,15 @@ export class Wallet {
         network: this.networkId,
         nonce: this.nonce
       })
+      //resync nonce
+      setInterval(async () => {
+        let release = await this.mutex.lock()
+        this.nonce = await this.web3.eth
+          .getTransactionCount(this.address)
+          .then(parseInt)
+          .catch(e => this.nonce)
+          .finally(() => release())
+      }, 30000)
     } catch (e) {
       log.error('Error initializing wallet', { e }, e.message)
     }
@@ -264,8 +273,12 @@ export class Wallet {
           res(r)
         })
         .on('confirmation', c => onConfirmation && onConfirmation(c))
-        .on('error', e => {
-          release()
+        .on('error', async e => {
+          this.nonce = await this.web3.eth
+            .getTransactionCount(this.address)
+            .then(parseInt)
+            .catch(e => this.nonce)
+            .finally(() => release())
           onError && onError(e)
           rej(e)
         })
@@ -310,8 +323,12 @@ export class Wallet {
           res(r)
         })
         .on('confirmation', c => onConfirmation && onConfirmation(c))
-        .on('error', e => {
-          release()
+        .on('error', async e => {
+          this.nonce = await this.web3.eth
+            .getTransactionCount(this.address)
+            .then(parseInt)
+            .catch(e => this.nonce)
+            .finally(() => release())
           onError && onError(e)
           rej(e)
         })
