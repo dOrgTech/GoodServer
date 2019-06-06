@@ -34,18 +34,21 @@ export default (app: Router, env: any) => {
 
   // parse application/json
   app.use(bodyParser.json())
-
+  console.log('bfore options')
   app.options(cors())
   app.use(cors())
 
   app.use(pino({ logger }))
+  console.log('after pino')
 
   addLoginMiddlewares(app)
+  console.log('bfore gun')
   addGunMiddlewares(app)
+  console.log('after gun')
   addStorageMiddlewares(app, GunDBPrivate)
   addVerificationMiddlewares(app, VerificationAPI, GunDBPrivate)
   addSendMiddlewares(app)
-
+  console.log('beforer rollbar')
   app.use(rollbar.errorHandler())
 
   app.use((error, req, res, next: NextFunction) => {
