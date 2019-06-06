@@ -15,14 +15,14 @@ import VerificationAPI from './verification/verification'
 import fs from 'fs'
 
 const log = logger.child({ from: 'server-middlewares' })
-process.on('uncaughtException', (err, origin) => {
-  log.error(`Caught exception: ${err}\n` + `Exception origin: ${origin}`)
-})
+// process.on('uncaughtException', (err, origin) => {
+//   log.error(`Caught exception: ${err}\n` + `Exception origin: ${origin}`)
+// })
 
-process.on('unhandledRejection', (reason, promise) => {
-  log.error('Unhandled Rejection at:', promise, 'reason:', reason)
-  // Application specific logging, throwing an error, or other logic here
-})
+// process.on('unhandledRejection', (reason, promise) => {
+//   log.error('Unhandled Rejection at:', promise, 'reason:', reason)
+//   // Application specific logging, throwing an error, or other logic here
+// })
 export default (app: Router, env: any) => {
   // parse application/x-www-form-urlencoded
   // for easier testing with Postman or plain HTML forms
