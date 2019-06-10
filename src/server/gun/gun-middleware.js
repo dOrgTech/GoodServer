@@ -220,7 +220,28 @@ class GunDB implements StorageAPI {
     return true
   }
 
-  async signClaim(subjectPubKey: string, claimData: any): Claim {
+  async signClaim(subjectPubKey: string, claimData: any): Promise<Claim> {
+    let attestation: Claim = {
+      issuer: { '@did': 'did:gooddollar:' + this.user.is.pub, publicKey: this.user.is.pub },
+      subject: {
+        '@did': 'did:gooddollar:' + subjectPubKey,
+        publicKey: subjectPubKey
+      },
+      claim: claimData,
+      issuedAt: new Date()
+    }
+    let sig = await SEA.sign(attestation, this.user.pair())
+    attestation.sig = sig
+    return attestation
+  }
+}
+
+class GunDBPublicClient {
+  gun: Gun
+
+  user: Gun
+
+  async signClaim(subjectPubKey: string, claimData: any): Promise<Claim> {
     let attestation: Claim = {
       issuer: { '@did': 'did:gooddollar:' + this.user.is.pub, publicKey: this.user.is.pub },
       subject: {

@@ -36,7 +36,8 @@ const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
           fsPromises.unlink(verificationData.facemapFile)
           fsPromises.unlink(verificationData.auditTrailImageFile)
         })
-      else { // mocked result for verified user or development mode
+      else {
+        // mocked result for verified user or development mode
         result = {
           ok: 1,
           isVerified: true,
@@ -150,7 +151,7 @@ const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
   app.post(
     '/verify/sendemail',
     passport.authenticate('jwt', { session: false }),
-    onlyInEnv('production', 'staging', 'test'),
+    onlyInEnv('production', 'staging', 'test', 'development'),
     wrapAsync(async (req, res, next) => {
       const log = req.log.child({ from: 'verificationAPI - verify/sendemail' })
       const { user, body } = req
@@ -188,7 +189,7 @@ const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
   app.post(
     '/verify/email',
     passport.authenticate('jwt', { session: false }),
-    onlyInEnv('production', 'staging', 'test'),
+    onlyInEnv('production', 'staging', 'test', 'development'),
     wrapAsync(async (req, res, next) => {
       const log = req.log.child({ from: 'verificationAPI - verify/email' })
       const { user, body } = req
