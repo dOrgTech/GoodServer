@@ -99,12 +99,10 @@ const Helper = {
     try {
       let res: SearchResult = await ZoomClient.search(zoomData)
       //we dont need the audittrailimages
-      let results = _.map(res.data.results, o => _.omit(o, 'auditTrailImage'))
-      res.data.results = results
+      let results = _.map(_.get(res, 'data.results', []), o => _.omit(o, 'auditTrailImage'))
+      _.set(res, 'data.results', results)
       log.debug('search result:', { res })
-      const validMatches = _.filter(res.data.results, r =>
-        r.zoomSearchMatchLevel.match(/ZOOM_SEARCH_MATCH_LEVEL_[0-2]/)
-      )
+      const validMatches = _.filter(results, r => r.zoomSearchMatchLevel.match(/ZOOM_SEARCH_MATCH_LEVEL_[0-2]/))
       return (
         validMatches.length > 0 && _.find(validMatches, { enrollmentIdentifier: identifier }) === undefined // if found matches - verify it's not the user itself
       )
