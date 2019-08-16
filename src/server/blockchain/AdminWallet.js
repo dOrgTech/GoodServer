@@ -287,7 +287,7 @@ export class Wallet {
     gasPrice = gasPrice || this.gasPrice
 
     let release = await this.mutex.lock()
-    this.nonce = parseInt(await this.web3.eth.getTransactionCount(this.address))
+    // this.nonce = parseInt(await this.web3.eth.getTransactionCount(this.address))
     return new Promise((res, rej) => {
       tx.send({ gas, gasPrice, chainId: this.networkId, nonce: this.nonce })
         .on('transactionHash', h => {
@@ -332,7 +332,7 @@ export class Wallet {
     gasPrice = gasPrice || this.gasPrice
 
     let release = await this.mutex.lock()
-    this.nonce = parseInt(await this.web3.eth.getTransactionCount(this.address))
+    // this.nonce = parseInt(await this.web3.eth.getTransactionCount(this.address))
 
     return new Promise((res, rej) => {
       this.web3.eth
