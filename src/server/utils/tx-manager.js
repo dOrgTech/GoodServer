@@ -2,8 +2,8 @@ import config from '../server.config'
 import queueMongo from './tx-manager/queueMongo'
 import queueMutex from './tx-manager/queueMutex'
 
-const network_id = config.ethereum.network_id
-const LOCAL_NETWORK_ID = 4447
+const network = config.network
+const LOCAL_NETWORK = 'develop'
 
 class TransactionRun {
   /**
@@ -14,8 +14,8 @@ class TransactionRun {
   static getManagerInstance() {
     let queueManager = null
 
-    switch (network_id) {
-      case LOCAL_NETWORK_ID:
+    switch (network) {
+      case LOCAL_NETWORK:
         queueManager = new queueMutex()
         break
 

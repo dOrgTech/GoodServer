@@ -1,5 +1,5 @@
 import WalletNonce from '../../models/wallet-nonce'
-
+import { MODEL_WALLET_EXPIRE } from '../../models/constants'
 export default class queueMongo {
   constructor() {
     this.model = WalletNonce
@@ -15,7 +15,6 @@ export default class queueMongo {
     ]
 
     const options = { fullDocument: 'updateLookup' }
-
     // listen to the collection
     this.model.watch(filter, options).on('change', data => {
       this.run()
@@ -25,17 +24,20 @@ export default class queueMongo {
   /**
    * Get new nonce after increment
    * @param address
-   * @param netNonce
    * @returns {Promise<*>}
    */
   async getWalletNonce(address) {
     try {
       let wallet = await this.model.findOneAndUpdate(
-        { address, isLock: false },
-        { isLock: true },
-        { returnNewDocument: true }
+        {
+          $or: [
+            { address, isLock: false },
+            { isLock: true, createdAt: { $gte: new Date(new Date().getTime() - MODEL_WALLET_EXPIRE).toISOString() } }
+          ]
+        },
+        { isLock: true, $currentDate: { createdAt: true } },
+        { returnOriginal: false, returnNewDocument: true }
       )
-
       return wallet
     } catch (e) {
       console.log(e)
@@ -43,6 +45,9 @@ export default class queueMongo {
     }
   }
 
+  init(address, nonce) {
+    this.createIfNotExist(address, nonce)
+  }
   /**
    * Create if not exist nonce to db
    * @param address
@@ -75,7 +80,8 @@ export default class queueMongo {
       { address },
       {
         isLock: false,
-        nonce: nextNonce
+        nonce: nextNonce,
+        createdAt: 0
       },
       { returnNewDocument: true }
     )
@@ -84,12 +90,11 @@ export default class queueMongo {
   /**
    * lock for queue
    * @param address
-   * @param netNonce
    * @returns {Promise<any>}
    */
-  async lock(address, netNonce) {
+  async lock(address) {
     return new Promise(resolve => {
-      this.addToQueue(address, netNonce, nonce =>
+      this.addToQueue(address, nonce =>
         resolve({
           nonce,
           release: async () => await this.unlock(address, nonce + 1),
@@ -102,13 +107,10 @@ export default class queueMongo {
   /**
    *  Add new tr to queue
    * @param address
-   * @param netNonce
    * @param cb
    * @returns {Promise<void>}
    */
-  async addToQueue(address, netNonce, cb) {
-    await this.createIfNotExist(address, netNonce)
-
+  async addToQueue(address, cb) {
     this.queue.push({ cb, address })
 
     this.run()
@@ -118,16 +120,18 @@ export default class queueMongo {
    * Run the first transaction from the queue
    * @returns {Promise<void>}
    */
-  async run() {
+  run = async () => {
+    this.timeout && clearTimeout(this.timeout)
     try {
       if (this.queue.length > 0) {
         const nextTr = this.queue[0]
-
         const walletNonce = await this.getWalletNonce(nextTr.address)
-
         if (walletNonce) {
           this.queue.shift()
           nextTr.cb(walletNonce.nonce)
+        }
+        if (this.queue.length > 0) {
+          this.timeout = setTimeout(this.run, MODEL_WALLET_EXPIRE)
         }
       }
     } catch (e) {

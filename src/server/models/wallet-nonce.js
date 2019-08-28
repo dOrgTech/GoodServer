@@ -13,7 +13,8 @@ export const WalletNonceSchema = new mongoose.Schema({
   isLock: {
     type: Boolean,
     default: false
-  }
+  },
+  createdAt: { type: Date, default: Date.now }
 })
 
 export default mongoose.db.model(MODEL_WALLET_NONCE, WalletNonceSchema)

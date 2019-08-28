@@ -146,6 +146,7 @@ export class Wallet {
       let gdbalance = await this.tokenContract.methods.balanceOf(this.address).call()
       let nativebalance = await this.web3.eth.getBalance(this.address)
       this.nonce = parseInt(await this.web3.eth.getTransactionCount(this.address))
+      txManager.init(this.address, this.nonce)
       log.debug('AdminWallet Ready:', {
         account: this.address,
         gdbalance,
@@ -286,9 +287,7 @@ export class Wallet {
     gas = gas || (await tx.estimateGas())
     gasPrice = gasPrice || this.gasPrice
 
-    const netNonce = parseInt(await this.web3.eth.getTransactionCount(this.address))
-
-    const { nonce, release, fail } = await txManager.lock(this.address, netNonce)
+    const { nonce, release, fail } = await txManager.lock(this.address)
 
     return new Promise((res, rej) => {
       tx.send({ gas, gasPrice, chainId: this.networkId, nonce })
@@ -332,9 +331,7 @@ export class Wallet {
     gas = gas || 100000
     gasPrice = gasPrice || this.gasPrice
 
-    const netNonce = parseInt(await this.web3.eth.getTransactionCount(this.address))
-
-    const { nonce, release, fail } = await txManager.lock(this.address, netNonce)
+    const { nonce, release, fail } = await txManager.lock(this.address)
 
     return new Promise((res, rej) => {
       this.web3.eth

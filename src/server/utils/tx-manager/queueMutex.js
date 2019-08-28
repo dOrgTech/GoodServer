@@ -6,18 +6,17 @@ export default class queueMutex {
     this.mutex = new Mutex()
   }
 
+  init(address, nonce) {
+    this.nonce = nonce
+  }
   /**
    * lock for queue
    * @param address
    * @param netNonce
    * @returns {Promise<any>}
    */
-  async lock(address, netNonce) {
-    if (!this.nonce) {
-      this.nonce = netNonce
-    } else {
-      this.nonce++
-    }
+  async lock(address) {
+    this.nonce++
 
     let release = await this.mutex.lock()
 
@@ -25,8 +24,8 @@ export default class queueMutex {
       nonce: this.nonce,
       release: release,
       fail: () => {
-        this.nonce--;
-        release();
+        this.nonce--
+        release()
       }
     }
   }
