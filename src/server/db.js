@@ -2,14 +2,12 @@ import mongoose from 'mongoose'
 
 import config from './server.config'
 
-const { uri, user, pass, dbName } = config.mongodb
+const { uri } = config.mongodb
 mongoose.Promise = Promise
 mongoose.db = mongoose.createConnection(uri, {
-  user,
-  pass,
-  dbName,
-  useNewUrlParser: true
-  // useFindAndModify: false
+  useNewUrlParser: true,
+  useFindAndModify: false,
+  useCreateIndex: true
 })
 
 export default mongoose
