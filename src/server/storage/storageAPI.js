@@ -10,6 +10,7 @@ import { Mautic } from '../mautic/mauticAPI'
 import conf from '../server.config'
 import AdminWallet from '../blockchain/AdminWallet'
 import Helper from '../verification/faceRecognition/faceRecognitionHelper'
+import { IdentityDefinitionForm } from '@dorgtech/id-dao-client'
 
 const setup = (app: Router, storage: StorageAPI) => {
   /**
@@ -58,6 +59,37 @@ const setup = (app: Router, storage: StorageAPI) => {
         })
       log.debug('added new user:', { user, ok })
       res.json(ok)
+    })
+  )
+
+  app.post(
+    '/user/proposeid',
+    passport.authenticate('jwt', { session: false }),
+    wrapAsync(async (req, res, next) => {
+      const { body, user: userRecord, log } = req
+      const logger = req.log.child({ from: 'storageAPI - /user/proposeid' })
+      log.debug('new identity propose request:', { data: body.user, userRecord })
+      const identity = new IdentityDefinitionForm()
+      const socialPosts = identity.$.socialPosts
+      socialPosts.data = body.user.socialPosts
+      const valRes = await socialPosts.validate()
+      const socialPostErrors = {}
+      if (valRes.hasError) {
+        Object.keys(socialPosts).forEach(key => {
+          socialPostErrors[key] = socialPosts.value[key].error
+        })
+        log.debug('identity propose errors:', { data: socialPostErrors })
+      }
+      log.debug('identity propose succeded:', { data: userRecord.socialPosts })
+      // const user: UserRecord = defaults(body.user, {
+      //   identifier: userRecord.loggedInAs,
+      //   createdDate: new Date().toString()
+      // })
+
+      //topwallet of user after registration
+      //storage.updateUser({ ...user, mauticId })
+      //log.debug('updated identity for user:', { user, ok })
+      res.json(!!valRes.hasError)
     })
   )
 
