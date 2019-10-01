@@ -22,8 +22,8 @@ module.exports = {
     fs: "empty"
   },
   optimization: {
-  nodeEnv: false
-},
+    nodeEnv: false
+  },
   module: {
     rules: [
       // {
