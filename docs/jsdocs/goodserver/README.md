@@ -27,7 +27,7 @@ GoodDollar Server
 - [Identity DAO](#identity-dao)
 	- [Is human](#is-human)
 	- [Propose add identity](#propose-add-id)
-	- [Propose edit identity](#propose-edit-id)
+	- [Propose update identity](#propose-update-id)
 	- [Proposal status](#proposal-status)
 
 
@@ -259,11 +259,11 @@ GoodDollar Server
 | identityDefinition			| Object			|  							|
 | signature			| String			|  							|
 
-## Propose edit identity
+## Propose update identity
 
 
 
-	POST /id-dao/propose-edit
+	POST /id-dao/propose-update
 
 
 ### Parameters
