@@ -22,8 +22,15 @@ before_script:
   - ganache-cli -m "$MNEMONIC" --port 9545 --networkId 4447 -g 10000000000 &
   - cd GoodContracts || true
   - npm i
-  - truffle migrate --reset --network develop
   - npm link
+  - truffle migrate --reset --network develop
+  - export ID_DAO_IPFS_PORT=5002
+  - export ID_DAO_WEB3_PORT=9545
+  - export ID_DAO_DEV_MNEMONIC="$MNEMONIC"
+  - npm i -g ipfs
+  - jsipfs init
+  - jsipfs daemon &
+  - npm run migrate:id-dao
   - cd ..
 
 script:
