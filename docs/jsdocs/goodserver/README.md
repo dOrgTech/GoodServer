@@ -13,6 +13,7 @@ GoodDollar Server
 - [Storage](#storage)
 	- [Add user account](#add-user-account)
 	- [Delete user account](#delete-user-account)
+	- [Upload user content](#upload-user-content)
 	
 - [Verification](#verification)
 	- [Verify email code](#verify-email-code)
@@ -23,6 +24,11 @@ GoodDollar Server
 	- [Tops Users Wallet if needed](#tops-users-wallet-if-needed)
 	- [Whitelist user](#whitelist-user)
 	
+- [Identity DAO](#identity-dao)
+	- [Is human](#is-human)
+	- [Propose add identity](#propose-add-id)
+	- [Propose update identity](#propose-update-id)
+	- [Proposal status](#proposal-status)
 
 
 # Login
@@ -115,6 +121,19 @@ GoodDollar Server
 | Name    | Type      | Description                          |
 |---------|-----------|--------------------------------------|
 | zoomId			| String			|  							|
+
+## Upload user content
+
+
+
+	POST /user/upload-content
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+
 
 # Verification
 
@@ -211,4 +230,58 @@ GoodDollar Server
 |---------|-----------|--------------------------------------|
 | verificationData			| Object			|  							|
 
+# Identity DAO
 
+## Is human
+
+
+
+	POST /id-dao/is-human
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| address			| Address			|  							|
+
+## Propose add identity
+
+
+
+	POST /id-dao/propose-add
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| identityDefinition			| Object			|  							|
+| signature			| String			|  							|
+
+## Propose update identity
+
+
+
+	POST /id-dao/propose-update
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| identityDefinition			| Object			|  							|
+| signature			| String			|  							|
+
+## Proposal status
+
+
+
+	POST /id-dao/proposal-status
+
+
+### Parameters
+
+| Name    | Type      | Description                          |
+|---------|-----------|--------------------------------------|
+| address			| Address			|  							|

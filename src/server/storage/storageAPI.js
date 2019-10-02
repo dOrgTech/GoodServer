@@ -1,18 +1,27 @@
 // @flow
 import { Router } from 'express'
 import passport from 'passport'
-import get from 'lodash/get'
-import { type StorageAPI, UserRecord } from '../../imports/types'
+import _, { defaults } from 'lodash'
+import multer from 'multer'
+import { StorageAPI, UserRecord } from '../../imports/types'
 import { wrapAsync } from '../utils/helpers'
-import { defaults } from 'lodash'
+
 import fetch from 'cross-fetch'
 import md5 from 'md5'
+import fs from 'fs'
 import { Mautic } from '../mautic/mauticAPI'
 import conf from '../server.config'
 import AdminWallet from '../blockchain/AdminWallet'
 // import Helper from '../verification/faceRecognition/faceRecognitionHelper'
 
+// TODO: make this middleware like gundb?
+import IPFSClient from 'ipfs-http-client'
+const ipfs = IPFSClient('127.0.0.1', process.env.ID_DAO_IPFS_PORT)
+
+const fsPromises = fs.promises
 const setup = (app: Router, storage: StorageAPI) => {
+  var upload = multer({ dest: 'uploads/' }) // to handle blob parameters
+
   /**
    * @api {post} /user/add Add user account
    * @apiName Add
@@ -80,7 +89,7 @@ const setup = (app: Router, storage: StorageAPI) => {
       log.debug('Web3 user record', web3Record)
 
       //mautic contact should already exists since it is first created during the email verification we update it here
-      const mauticId = get(mauticRecord, 'contact.fields.all.id', -1)
+      const mauticId = _.get(mauticRecord, 'contact.fields.all.id', -1)
       logger.debug('User mautic record', { mauticId, mauticRecord })
 
       const updateUserObj = {
@@ -139,6 +148,49 @@ const setup = (app: Router, storage: StorageAPI) => {
       ])
       log.info('delete user results', { results })
       res.json({ ok: 1, results })
+    })
+  )
+
+  /**
+   * @api {post} /user/upload-content Update user content
+   * @apiName Upload Content
+   * @apiGroup Storage
+   *
+   * @apiSuccess {Number} ok
+   * @apiSuccess {String} contentHash
+   * @ignore
+   */
+  app.post(
+    '/user/upload-content',
+    passport.authenticate('jwt', { session: false }),
+    upload.any(),
+    wrapAsync(async (req, res, next) => {
+      const { files, log } = req
+      const file = _.get(_.find(files, { fieldname: 'content' }), 'path', '')
+      const fileBuffer = fs.readFileSync(file)
+      const ipfsRes = await ipfs.add(fileBuffer)
+
+      let result = {}
+
+      if (ipfsRes.length === 0) {
+        const error = 'Error uploading to IPFS, no response'
+        log.error(error)
+        result = {
+          ok: 1,
+          error
+        }
+      } else {
+        result = {
+          ok: 1,
+          contentHash: ipfsRes[0].path
+        }
+      }
+
+      log.info('cleaning up user content file')
+      fsPromises.unlink(file)
+
+      log.debug('User Upload Result:', result)
+      res.json(result)
     })
   )
 
