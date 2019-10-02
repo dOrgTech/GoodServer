@@ -151,6 +151,15 @@ const setup = (app: Router, storage: StorageAPI) => {
     })
   )
 
+  /**
+   * @api {post} /user/upload-content Update user content
+   * @apiName Upload Content
+   * @apiGroup Storage
+   *
+   * @apiSuccess {Number} ok
+   * @apiSuccess {String} contentHash
+   * @ignore
+   */
   app.post(
     '/user/upload-content',
     passport.authenticate('jwt', { session: false }),

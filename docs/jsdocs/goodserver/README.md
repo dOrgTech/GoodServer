@@ -24,7 +24,7 @@ GoodDollar Server
 	- [Tops Users Wallet if needed](#tops-users-wallet-if-needed)
 	- [Whitelist user](#whitelist-user)
 	
-- [Identity DAO](#id-dao)
+- [Identity DAO](#identity-dao)
 	- [Is human](#is-human)
 	- [Propose add identity](#propose-add-id)
 	- [Propose edit identity](#propose-edit-id)
