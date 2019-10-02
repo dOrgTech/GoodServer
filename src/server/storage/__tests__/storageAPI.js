@@ -40,4 +40,23 @@ describe('storageAPI', () => {
       .send({ user })
     expect(res).toMatchObject({ status: 400 })
   })
+
+  test('/user/upload-content', async done => {
+    const token = await getToken(server)
+    request(server)
+      .post('/user/upload-content')
+      .set('Authorization', `Bearer ${token}`)
+      .attach('content', __dirname + '/test.jpg')
+      .then(res => {
+        expect(res).toMatchObject({
+          status: 200,
+          body: {
+            ok: 1,
+            contentHash: 'QmYzP4aV7RUYGo5X1BAYS3V8MEjwT29734Q4JAixad5jau'
+          }
+        })
+      })
+      .catch(err => console.log(err))
+      .finally(done)
+  })
 })
