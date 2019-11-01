@@ -46,4 +46,12 @@ const onlyInEnv = (...environments: Array<string>) => {
   }
 }
 
+function onlyInW3(req: $Request, res: $Response, next: NextFunction) {
+  if (!conf.ignoreW3) {
+    next()
+    return
+  }
+  res.json({ ok: 1, onlyInW3: conf.ignoreW3 })
+}
+
 export { wrapAsync, onlyInEnv, lightLogs }

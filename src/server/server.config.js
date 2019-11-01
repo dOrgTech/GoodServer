@@ -312,6 +312,12 @@ const conf = convict({
     env: 'WEB3_SITE_URL',
     default: undefined
   },
+  ignoreW3: {
+    doc: 'Ignore w3 process',
+    format: Boolean,
+    env: 'IGNORE_W3_PROCESS',
+    default: true
+  },
   marketPassword: {
     doc: 'password for market jwt',
     format: String,

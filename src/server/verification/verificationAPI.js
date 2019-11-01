@@ -367,6 +367,7 @@ const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
   app.post(
     '/verify/w3/email',
     passport.authenticate('jwt', { session: false }),
+    onlyInEnv,
     wrapAsync(async (req, res, next) => {
       const log = req.log.child({ from: 'verificationAPI - verify/w3/email' })
 
@@ -430,6 +431,7 @@ const setup = (app: Router, verifier: VerificationAPI, storage: StorageAPI) => {
   app.get(
     '/verify/w3/logintoken',
     passport.authenticate('jwt', { session: false }),
+    onlyInEnv,
     wrapAsync(async (req, res, next) => {
       const { user, log } = req
       const logger = log.child({ from: 'verificationAPI - login/token' })

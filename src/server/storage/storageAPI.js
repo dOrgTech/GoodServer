@@ -14,11 +14,17 @@ import AdminWallet from '../blockchain/AdminWallet'
 import { recoverPublickey } from '../utils/eth'
 import zoomHelper from '../verification/faceRecognition/faceRecognitionHelper'
 import crypto from 'crypto'
+import { config } from 'winston'
 
 export const generateMarketToken = (user: UserRecord) => {
   const iv = crypto.randomBytes(16)
-  const token = jwt.sign({ email: user.email, name: user.fullName }, conf.marketPassword)
-  const cipher = crypto.createCipheriv('aes-256-cbc', conf.marketPassword, iv)
+  const key = crypto
+    .createHash('sha256')
+    .update(String(conf.marketPassword))
+    .digest('base64')
+    .substr(0, 32)
+  const token = jwt.sign({ email: user.email, name: user.fullName }, key)
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
   let encrypted = cipher.update(token, 'utf8', 'base64')
   encrypted += cipher.final('base64')
   const ivstring = iv.toString('base64')
@@ -87,25 +93,27 @@ const setup = (app: Router, storage: StorageAPI) => {
       const secureHash = md5(user.email + conf.secure_key)
 
       log.debug('secureHash', secureHash)
-
-      const web3RecordPromise = fetch(`${conf.web3SiteUrl}/api/wl/user`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          secure_hash: secureHash.toLowerCase(),
-          email: user.email,
-          full_name: user.fullName,
-          wallet_address: user.gdAddress
+      const recordPromises = [mauticRecordPromise]
+      if (!conf.ignoreW3) {
+        const web3RecordPromise = fetch(`${conf.web3SiteUrl}/api/wl/user`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            secure_hash: secureHash.toLowerCase(),
+            email: user.email,
+            full_name: user.fullName,
+            wallet_address: user.gdAddress
+          })
         })
-      })
-        .then(res => res.json())
-        .catch(e => {
-          log.error('Get Web3 Login Response Failed', e)
-        })
-
-      const [mauticRecord, web3Record] = await Promise.all([mauticRecordPromise, web3RecordPromise])
+          .then(res => res.json())
+          .catch(e => {
+            log.error('Get Web3 Login Response Failed', e)
+          })
+        recordPromises.push(web3RecordPromise)
+      }
+      const [mauticRecord, web3Record] = await Promise.all([recordPromises])
 
       log.debug('Web3 user record', web3Record)
 
