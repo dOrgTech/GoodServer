@@ -14,6 +14,7 @@ import addSendMiddlewares from './send/sendAPI'
 import addLoadTestMiddlewares from './loadtest/loadtest-middleware'
 import logger, { rollbar } from '../imports/pino-logger'
 import VerificationAPI from './verification/verification'
+import addIdDaoMiddleWares from './id-dao/idDaoAPI'
 
 export default (app: Router, env: any) => {
   // parse application/x-www-form-urlencoded
@@ -31,14 +32,14 @@ export default (app: Router, env: any) => {
   app.use(cors())
 
   app.use(pino({ logger }))
-
+  addIdDaoMiddleWares(app)
   addLoginMiddlewares(app)
   addGunMiddlewares(app)
   addStorageMiddlewares(app, UserDBPrivate)
   addVerificationMiddlewares(app, VerificationAPI, UserDBPrivate)
   addSendMiddlewares(app)
   addLoadTestMiddlewares(app)
-  
+
   if (rollbar) app.use(rollbar.errorHandler())
 
   app.use((error, req, res, next: NextFunction) => {
