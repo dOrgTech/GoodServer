@@ -12,16 +12,20 @@ import {
   IdentityDefinitionForm,
   deserialize,
   isHuman,
+  getEnabledWeb3,
   setWeb3Provider,
   proposeAdd,
   recoverSig,
-  setIdDaoProxy
+  setIdDaoProxy,
+  getAccount,
+  getGenericScheme,
+  idDaoAddresses
 } from '@dorgtech/id-dao-client'
 
 // import get from 'lodash/get'
 import { type StorageAPI, UserRecord } from '../../imports/types'
 import { wrapAsync } from '../utils/helpers'
-import { recoverPublickey } from '../utils/eth'
+import { getNetworkName } from '@dorgtech/id-dao-client/dist/utils/web3Utils'
 
 // import { defaults } from 'lodash'
 // import jwt from 'jsonwebtoken'
@@ -60,11 +64,9 @@ const setup = (app: Router, storage: StorageAPI) => {
       const signature = body.signature
       const formHash = CIDTool.format(await multihashing(Buffer.from(body.form), 'sha2-256'))
       if (formHash !== body.hash) {
-        // check if hashes are equal
         log.error('calculated hash ', formHash, ' does not equal signed hash', body.hash)
         return false
       }
-      log.debug('signature', signature, 'formhash', formHash)
       const sigAddress = await recoverSig(formHash, signature)
       if (sigAddress !== form.address) {
         // check if signed
@@ -75,7 +77,6 @@ const setup = (app: Router, storage: StorageAPI) => {
       for (let i = 0; i < uploadKeys.length; i++) {
         // check if photos match
         const key = uploadKeys[i]
-        log.debug('key', key)
         const uploadPath = _.get(_.find(files, { fieldname: key }), 'path', '')
         const uploadFile = fs.readFileSync(uploadPath)
         const mh = CIDTool.format(await multihashing(uploadFile, 'sha2-256'))
